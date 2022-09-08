@@ -84,8 +84,8 @@
                       </tr>
                     </thead>
                     <tbody>
-                    
-                      <tr th:each="item,State : ${cartItems}">
+                    <form th:action="@{'/checkout/update/' + ${item.product.productId}}" method="post" th:each="item,State : ${cartItems}">
+                      <tr>
                         <td class="table-serial"><h6>[[${State.index + 1}]]</h6></td>
                         <td class="table-image">
                           <img  th:src="@{'/loadImage?imageName='+${item.product.productImage}}" alt="product" />
@@ -95,7 +95,8 @@
                           <h6>[[${#numbers.formatDecimal(item.product.price - (item.product.price * item.product.discount/100), 1, 'DEFAULT', 0, 'DEFAULT')} +' đ']]<small>/kg</small></h6>
                         </td>
                         <td class="table-brand"><h6>[[${item.product.category.categoryName}]]</h6></td>
-                        <td class="table-quantity"><h6>[[${item.quantity}]]</h6></td>
+                        <td class="table-quantity"><input name="quantity" th:value="${item.quantity}"
+                          onblur="this.form.submit()"></td>
                         <td class="table-action">
                           <a
                             class="view"
@@ -110,6 +111,7 @@
                             </a>
                         </td>
                       </tr>
+                    </form>
                     </tbody>
                   </table>
                 </div>
