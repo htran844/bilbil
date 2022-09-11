@@ -39,8 +39,9 @@ public class Order implements Serializable {
 	private Double amount;
 	private String address;
 	private String phone;
+	private String paymentintent;
 	private int status;
-
+	private Double refund;
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> orderDetails;
 

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
@@ -28,10 +29,12 @@ import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 import com.stripe.Stripe;
-import com.stripe.model.billingportal.Session;
+import com.stripe.model.checkout.Session;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.net.RequestOptions;
+import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.checkout.SessionCreateParams.LineItem;
 
 import vn.fs.commom.CommomDataService;
 import vn.fs.config.PaypalPaymentIntent;
@@ -73,11 +76,13 @@ public class CartController extends CommomController {
 	OrderDetailRepository orderDetailRepository;
 
 	public Order orderFinal = new Order();
+	public String payment_id = "";
 
 	public static final String URL_PAYPAL_SUCCESS = "pay/success";
 	public static final String URL_PAYPAL_CANCEL = "pay/cancel";
-	private Logger log = LoggerFactory.getLogger(getClass());
 	
+	public static final String URL_STRIPE_SUCCESS = "stripe/success";
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@GetMapping(value = "/shoppingCart_checkout")
 	public String shoppingCart(Model model) {
@@ -166,7 +171,7 @@ public class CartController extends CommomController {
 	// submit checkout
 	@PostMapping(value = "/checkout")
 	@Transactional
-	public String checkedOut(Model model, Order order, HttpServletRequest request, User user)
+	public String checkedOut(Model model, Order order, HttpServletRequest request,HttpServletResponse response ,User user)
 			throws MessagingException {
 
 		Stripe.apiKey = "sk_test_51Ld455DLGYAXEWbbILljGw7iWYhzUYb8CaQI9Et9Vk6aKRn9PxggWsSTXMYhfbO4YnvUb5WlTVGVNoPSS2jioskI00e4DJZOcQ";
@@ -183,30 +188,44 @@ public class CartController extends CommomController {
 
 		BeanUtils.copyProperties(order, orderFinal);
 		if (StringUtils.equals(checkOut, "stripe")) {
-
+			System.out.print("stripe");
 			String cancelUrl = Utils.getBaseURL(request) + "/" + URL_PAYPAL_CANCEL;
-			String successUrl = Utils.getBaseURL(request) + "/" + URL_PAYPAL_SUCCESS;
+			String successUrl = Utils.getBaseURL(request) + "/" + URL_STRIPE_SUCCESS;
 			try {
-				List<Object> lineItems = new ArrayList<>();
-				Map<String, Object> lineItem1 = new HashMap<>();
-				lineItem1.put("price", 500);
-				lineItem1.put("quantity", 2);
-				lineItems.add(lineItem1);
-				Map<String, Object> params = new HashMap<>();
-				params.put(
-				  "success_url",
-				  successUrl
-				);
-				params.put(
-				  "cancel_url",
-				  cancelUrl
-				);
-				params.put("line_items", lineItems);
-				params.put("mode", "payment");
+				List<LineItem> elements = new ArrayList<LineItem>();
+				for (CartItem cartItem : cartItems) {
+					System.out.println((long) cartItem.getQuantity());
+					System.out.println((long) cartItem.getProduct().getPrice());
+					System.out.println(cartItem.getProduct().getProductName());
+					double price = cartItem.getQuantity() * cartItem.getProduct().getPrice();
+					elements.add(SessionCreateParams.LineItem.builder()
+			            .setQuantity((long) cartItem.getQuantity())
+			            .setPriceData(
+			              SessionCreateParams.LineItem.PriceData.builder()
+			                .setCurrency("vnd")
+			                .setUnitAmount((long) cartItem.getProduct().getPrice())
+			                .setProductData(
+			                  SessionCreateParams.LineItem.PriceData.ProductData.builder()
+			                    .setName(cartItem.getProduct().getProductName())
+			                    .build())
+			                .build())
+			            .build());
+				}
+				SessionCreateParams params =
+				        SessionCreateParams.builder()
+				          .setMode(SessionCreateParams.Mode.PAYMENT)
+				          .setSuccessUrl(successUrl)
+				          .setCancelUrl(cancelUrl)
+				          .addAllLineItem(elements)
+				          .build();
 
-				Session session = Session.create(params);
-				System.out.print("session" + session);
-				return "redirect:/checkout_success";
+				      Session session = Session.create(params);
+
+				      System.out.print("payment_intent " + session.toString());
+				      payment_id = session.getId();
+//				      response.sendRedirect(session.getUrl());
+//				      return "";
+				return "redirect:" + session.getUrl();
 			} catch (Exception e) {
 				log.error(e.getMessage());
 			}
@@ -262,6 +281,72 @@ public class CartController extends CommomController {
 		return "redirect:/checkout_success";
 	}
 
+	// stripe
+		@GetMapping(URL_STRIPE_SUCCESS)
+		public String successPayStripe(
+				HttpServletRequest request, User user, Model model) throws MessagingException {
+			System.out.println(user.toString());
+			System.out.println(model.toString());
+			System.out.println(request.toString());
+			System.out.println("payment_id"+ payment_id);
+			Session session2;
+			try {
+				session2 = Session.retrieve(payment_id);
+				System.out.println("payment_intent"+ session2.getPaymentIntent());
+				Collection<CartItem> cartItems = shoppingCartService.getCartItems();
+				model.addAttribute("cartItems", cartItems);
+				model.addAttribute("total", shoppingCartService.getAmount());
+				double totalPrice = 0;
+				for (CartItem cartItem : cartItems) {
+					double price = cartItem.getQuantity() * cartItem.getProduct().getPrice();
+					totalPrice += price - (price * cartItem.getProduct().getDiscount() / 100);
+				} 
+				model.addAttribute("totalPrice", totalPrice);
+				model.addAttribute("totalCartItems", shoppingCartService.getCount());
+				try {
+					session = request.getSession();
+					Date date = new Date();
+					orderFinal.setOrderDate(date);
+					orderFinal.setStatus(2);
+					orderFinal.getOrderId();
+					orderFinal.setUser(user);
+					orderFinal.setAmount(totalPrice);
+					orderFinal.setPaymentintent(session2.getPaymentIntent());
+					orderRepository.save(orderFinal);
+
+					for (CartItem cartItem : cartItems) {
+						OrderDetail orderDetail = new OrderDetail();
+						orderDetail.setQuantity(cartItem.getQuantity());
+						orderDetail.setOrder(orderFinal);
+						orderDetail.setProduct(cartItem.getProduct());
+						double unitPrice = cartItem.getProduct().getPrice();
+						orderDetail.setPrice(unitPrice);
+						orderDetailRepository.save(orderDetail);
+					}
+
+					// sendMail
+					commomDataService.sendSimpleEmail(user.getEmail(), "Bilbil-Shop Xác Nhận Đơn hàng", "aaaa", cartItems,
+							totalPrice, orderFinal);
+
+					shoppingCartService.clear();
+					session.removeAttribute("cartItems");
+					model.addAttribute("orderId", orderFinal.getOrderId());
+					orderFinal = new Order();
+					return "redirect:/checkout_paypal_success";
+				} catch (Exception e) {
+					log.error(e.getMessage());
+				}
+			} catch (StripeException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			
+			
+			return "redirect:/";
+		}
+
+	
 	// paypal
 	@GetMapping(URL_PAYPAL_SUCCESS)
 	public String successPay(@RequestParam("" + "" + "") String paymentId, @RequestParam("PayerID") String payerId,

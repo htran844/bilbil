@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Refund;
+import com.stripe.param.RefundCreateParams;
+
 import vn.fs.dto.OrderExcelExporter;
 import vn.fs.entities.Order;
 import vn.fs.entities.OrderDetail;
@@ -90,16 +95,35 @@ public class OrderController {
 		return new ModelAndView("admin/editOrder", model);
 	}
 
-	@RequestMapping("/order/cancel/{order_id}")
-	public ModelAndView cancel(ModelMap model, @PathVariable("order_id") Long id) {
+	@RequestMapping("/order/cancel/{order_id}/{amount}/{paymentintent}")
+	public ModelAndView cancel(ModelMap model, @PathVariable("order_id") Long id, @PathVariable("amount") Double amount, @PathVariable("paymentintent") String paymentintent) {
 		Optional<Order> o = orderRepository.findById(id);
 		if (o.isEmpty()) {
 			return new ModelAndView("forward:/admin/orders", model);
 		}
 		Order oReal = o.get();
 		oReal.setStatus((short) 3);
+		oReal.setRefund(amount);
 		orderRepository.save(oReal);
+		Stripe.apiKey = "sk_test_51Ld455DLGYAXEWbbILljGw7iWYhzUYb8CaQI9Et9Vk6aKRn9PxggWsSTXMYhfbO4YnvUb5WlTVGVNoPSS2jioskI00e4DJZOcQ";
 
+		RefundCreateParams params =
+		  RefundCreateParams
+		    .builder()
+		    .setPaymentIntent(paymentintent)
+		    .setAmount(amount.longValue())
+		    .build();
+
+		try {
+			Refund refund = Refund.create(params);
+		} catch (StripeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println(id); 
+		System.out.println(amount);
+		System.out.println(paymentintent);
 		return new ModelAndView("forward:/admin/orders", model);
 	}
 
