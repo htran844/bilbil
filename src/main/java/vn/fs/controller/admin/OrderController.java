@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -94,15 +95,27 @@ public class OrderController {
 		model.addAttribute("menuO", "menu");
 		return new ModelAndView("admin/editOrder", model);
 	}
-
-	@RequestMapping("/order/cancel/{order_id}/{amount}/{paymentintent}")
-	public ModelAndView cancel(ModelMap model, @PathVariable("order_id") Long id, @PathVariable("amount") Double amount, @PathVariable("paymentintent") String paymentintent) {
+	@RequestMapping("/order/cancel/{order_id}")
+	public ModelAndView cancel(ModelMap model, @PathVariable("order_id") Long id) {
 		Optional<Order> o = orderRepository.findById(id);
 		if (o.isEmpty()) {
 			return new ModelAndView("forward:/admin/orders", model);
 		}
 		Order oReal = o.get();
 		oReal.setStatus((short) 3);
+
+		orderRepository.save(oReal);
+		
+		return new ModelAndView("forward:/admin/orders", model);
+	}
+	@RequestMapping("/order/refund/{order_id}/{amount}/{paymentintent}")
+	public ModelAndView refund(ModelMap model, @PathVariable("order_id") Long id, @PathVariable("amount") Double amount, @PathVariable("paymentintent") String paymentintent) {
+		Optional<Order> o = orderRepository.findById(id);
+		if (o.isEmpty()) {
+			return new ModelAndView("forward:/admin/orders", model);
+		}
+		Order oReal = o.get();
+		oReal.setStatus((short) 4);
 		oReal.setRefund(amount);
 		orderRepository.save(oReal);
 		Stripe.apiKey = "sk_test_51Ld455DLGYAXEWbbILljGw7iWYhzUYb8CaQI9Et9Vk6aKRn9PxggWsSTXMYhfbO4YnvUb5WlTVGVNoPSS2jioskI00e4DJZOcQ";
