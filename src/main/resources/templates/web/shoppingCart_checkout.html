@@ -84,8 +84,8 @@
                       </tr>
                     </thead>
                     <tbody>
-                    
-                      <tr th:each="item,State : ${cartItems}">
+                    <form th:action="@{'/checkout/update/' + ${item.product.productId}}" method="post" th:each="item,State : ${cartItems}">
+                      <tr>
                         <td class="table-serial"><h6>[[${State.index + 1}]]</h6></td>
                         <td class="table-image">
                           <img  th:src="@{'/loadImage?imageName='+${item.product.productImage}}" alt="product" />
@@ -95,7 +95,8 @@
                           <h6>[[${#numbers.formatDecimal(item.product.price - (item.product.price * item.product.discount/100), 1, 'DEFAULT', 0, 'DEFAULT')} +' đ']]<small>/kg</small></h6>
                         </td>
                         <td class="table-brand"><h6>[[${item.product.category.categoryName}]]</h6></td>
-                        <td class="table-quantity"><h6>[[${item.quantity}]]</h6></td>
+                        <td class="table-quantity"><input name="quantity" th:value="${item.quantity}"
+                          onblur="this.form.submit()"></td>
                         <td class="table-action">
                           <a
                             class="view"
@@ -110,6 +111,7 @@
                             </a>
                         </td>
                       </tr>
+                    </form>
                     </tbody>
                   </table>
                 </div>
@@ -210,25 +212,22 @@
         </div>
       </div>
     </section>
-    
-    <section
-      class="news-part"
-      style="background: url(images/newsletter.jpg) no-repeat center">
+
+    <section class="news-part"
+             style="background: url(images/newsletter.jpg) no-repeat center">
       <div class="container">
         <div class="row align-items-center">
           <div class="col-md-5 col-lg-6 col-xl-7">
             <div class="news-text">
-              <h2>Nhận chiết khấu 20% cho người đăng ký</h2>
-              <p>Nhận chiết khấu 20% cho người đăng ký</p>
+              <h2>Nhận Chiết Khấu 10% Cho Người Đăng Ký</h2>
+              <p>Đăng ký mở tài khoản thành viên giảm ngay 10% cho đơn hàng đầu tiên và nhiều ưu đãi khác.</p>
             </div>
           </div>
           <div class="col-md-7 col-lg-6 col-xl-5">
             <form class="news-form">
-              <input
-                type="text"
-                placeholder="Enter Your Email Address"
-              /><button>
-                <span><i class="icofont-ui-email"></i>Subscribe</span>
+              <input type="text" placeholder="Nhập Địa Chỉ Email Của Bạn" />
+              <button>
+                <span><i class="icofont-ui-email"></i>Gửi</span>
               </button>
             </form>
           </div>
@@ -240,37 +239,45 @@
         <div class="row intro-content">
           <div class="col-sm-6 col-lg-3">
             <div class="intro-wrap">
-              <div class="intro-icon"><i class="fas fa-truck"></i></div>
+              <div class="intro-icon">
+                <i class="fas fa-truck"></i>
+              </div>
               <div class="intro-content">
                 <h5>Giao Hàng Tận Nhà Miễn Phí</h5>
-                <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                <p>Với các đơn hàng từ 200.000 VNĐ trở lên. chúng tôi có chính sách giao hàng tận nhà miễn phí.</p>
               </div>
             </div>
           </div>
           <div class="col-sm-6 col-lg-3">
             <div class="intro-wrap">
-              <div class="intro-icon"><i class="fas fa-sync-alt"></i></div>
+              <div class="intro-icon">
+                <i class="fas fa-sync-alt"></i>
+              </div>
               <div class="intro-content">
                 <h5>Chính Sách Hoàn Trả</h5>
-                <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                <p>Với các đơn hàng nhầm hoặc lỗi chúng tôi xác nhận hoàn trả và hoàn tiền.</p>
               </div>
             </div>
           </div>
           <div class="col-sm-6 col-lg-3">
             <div class="intro-wrap">
-              <div class="intro-icon"><i class="fas fa-headset"></i></div>
+              <div class="intro-icon">
+                <i class="fas fa-headset"></i>
+              </div>
               <div class="intro-content">
                 <h5>Hệ Thống Hỗ Trợ</h5>
-                <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                <p>Đội ngũ hỗ trợ luôn làm việc và hỗ trợ 24/24.</p>
               </div>
             </div>
           </div>
           <div class="col-sm-6 col-lg-3">
             <div class="intro-wrap">
-              <div class="intro-icon"><i class="fas fa-lock"></i></div>
+              <div class="intro-icon">
+                <i class="fas fa-lock"></i>
+              </div>
               <div class="intro-content">
                 <h5>Cách Thanh Toán An Toàn</h5>
-                <p>Lorem ipsum dolor sit amet adipisicing elit nobis.</p>
+                <p>thanh toán qua các cổng dịch vụ uy tín và phổ biến.</p>
               </div>
             </div>
           </div>

@@ -102,8 +102,14 @@ public class ProductController{
 		} catch (IOException e) {
 
 		}
+		System.out.println("productID: "+product.getProductId());
+		System.out.println("productName: "+product.getProductName());
+		System.out.println("productImage: "+product.getProductImage());
 
-		product.setProductImage(file.getOriginalFilename());
+//		product.setProductImage(file.getOriginalFilename());
+//		if(product.getProductId() != null){
+//			this.productRepository.
+//		}
 		Product p = productRepository.save(product);
 		if (null != p) {
 			model.addAttribute("message", "Update success");
@@ -130,6 +136,9 @@ public class ProductController{
 		Product product = productRepository.findById(id).orElse(null);
 		
 		model.addAttribute("product", product);
+		System.out.println("productIDEdit: "+product.getProductId());
+		System.out.println("productNameEdit: "+product.getProductName());
+		System.out.println("productImageEdit: "+product.getProductImage());
 
 		return "admin/editProduct";
 	}
