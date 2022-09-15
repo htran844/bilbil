@@ -141,13 +141,17 @@
 													<div th:if="${item.status==2}" style="cursor: pointer; color: #f6abb6;">
 														<i class="fa fa-check-circle"> Đã thanh toán</i>
 														<a style="cursor: pointer;" th:data-id="${item.orderId}" th:data-intent="${item.paymentintent}"  th:data-amount="${item.amount}" 
-															onclick="showConfigCancelModalDialog(this.getAttribute('data-id'), this.getAttribute('data-amount'), this.getAttribute('data-intent'))">
+															onclick="showConfigRefundModalDialog(this.getAttribute('data-id'), this.getAttribute('data-amount'), this.getAttribute('data-intent'))">
 															<i class="fas fa-trash-alt text-danger"> Hoàn tiền</i>
 														</a>
 													</div>
 													
 													<div th:if="${item.status==3}" style="cursor: pointer; color: #ff3838;">
 														<i class="fas fa-ban"> Đã huỷ</i>
+													</div>
+													
+													<div th:if="${item.status==4}" style="cursor: pointer; color: #ff3838;">
+														<i class="fas fa-ban"> Đã hoàn [[${item.refund}]] đ</i>
 													</div>
 												
 												</td>
@@ -188,25 +192,62 @@
 											</div>
 										</div>
 									</div>
-									
-									<!-- Hoàn tiền đơn hàng -->
+									<!-- hủy đơn hàng -->
 									<script>
-										function showConfigCancelModalDialog(id, amount, paymentintent) {
-											let amount_value = Math.floor(amount) ;
+										function showConfigCancelModalDialog(id) {
+									
 											$('#idCancel').text(id);
-											$('#amount-name').val(amount);
-											$('#yesOptionCanCel').attr('href', '/admin/order/cancel/' + id + '/' + amount_value + '/' + paymentintent);
-											$( "#amount-name" ).change(function() {
-												 amount_value = Math.floor($('#amount-name').val()) ;
-												console.log(amount_value)
-												$('#yesOptionCanCel').attr('href', '/admin/order/cancel/' + id + '/' + amount_value + '/' + paymentintent);
-												});
+									
+											$('#yesOptionCanCel').attr('href', '/admin/order/cancel/' + id );
+										
 											$('#configmationCancelId').modal('show');
 										}
 									</script>
 							
 									<!-- Modal -->
 									<div class="modal" id="configmationCancelId">
+										<div class="modal-dialog" role="document">
+											<div class="modal-content">
+												<div class="modal-header">
+													<h5 class="modal-title">Hủy đơn</h5>
+													<button type="button" class="close" data-dismiss="modal"
+														aria-label="Close">
+														<span aria-hidden="true">&times;</span>
+													</button>
+												</div>
+												<div class="modal-body">
+													<p>
+														Bạn có muốn huỷ đơn hàng có mã "<span id="idCancel"></span>" ?
+													</p>
+												</div>
+							
+												<div class="modal-footer">
+													<a id="yesOptionCanCel" type="button" class="btn btn-info">Có</a>
+													<button type="button" class="btn btn-danger"
+														data-dismiss="modal">Không</button>
+												</div>
+											</div>
+										</div>
+									</div>
+									
+									<!-- Hoàn tiền đơn hàng -->
+									<script>
+										function showConfigRefundModalDialog(id, amount, paymentintent) {
+											let amount_value = Math.floor(amount) ;
+											$('#idRefund').text(id);
+											$('#amount-name').val(amount);
+											$('#yesOptionRefund').attr('href', '/admin/order/refund/' + id + '/' + amount_value + '/' + paymentintent);
+											$( "#amount-name" ).change(function() {
+												 amount_value = Math.floor($('#amount-name').val()) ;
+												console.log(amount_value)
+												$('#yesOptionRefund').attr('href', '/admin/order/refund/' + id + '/' + amount_value + '/' + paymentintent);
+												});
+											$('#configmationRefundId').modal('show');
+										}
+									</script>
+							
+									<!-- Modal -->
+									<div class="modal" id="configmationRefundId">
 										<div class="modal-dialog" role="document">
 											<div class="modal-content">
 												<div class="modal-header">
@@ -218,7 +259,7 @@
 												</div>
 												<div class="modal-body">
 													<p>
-														Bạn có muốn huỷ đơn hàng có mã "<span id="idCancel"></span>" ?
+														Bạn có muốn hoàn đơn hàng có mã "<span id="idRefund"></span>" ?
 													</p>
 												</div>
 												 <div class="form-group">
@@ -226,7 +267,7 @@
 										            <input type="text" class="form-control" id="amount-name">
 										          </div>
 												<div class="modal-footer">
-													<a id="yesOptionCanCel" type="button" class="btn btn-info">Có</a>
+													<a id="yesOptionRefund" type="button" class="btn btn-info">Có</a>
 													<button type="button" class="btn btn-danger"
 														data-dismiss="modal">Không</button>
 												</div>
@@ -297,7 +338,7 @@
 					</ul>
 				</nav>
 				<div class="copyright ml-auto">
-					2021, made with <i class="fa fa-heart heart text-danger"></i> by <a href="javascript:void(0);">Bilbil-SHOP</a>
+					2022, made with <i class="fa fa-heart heart text-danger"></i> by <a href="javascript:void(0);">Bilbil-SHOP</a>
 				</div>				
 			</div>
 		</footer>

@@ -167,6 +167,13 @@ public class CartController extends CommomController {
 
 		return "web/shoppingCart_checkout";
 	}
+	
+	@PostMapping("/checkout/update/{id}")
+	public String updateCart(@PathVariable("id") Long id, 
+			@RequestParam("quantity") Integer qty) {
+		shoppingCartService.update(id, qty);
+		return "redirect:/checkout";
+	}
 
 	// submit checkout
 	@PostMapping(value = "/checkout")
@@ -231,24 +238,7 @@ public class CartController extends CommomController {
 			}
 
 		}
-		if (StringUtils.equals(checkOut, "paypal")) {
-
-			String cancelUrl = Utils.getBaseURL(request) + "/" + URL_PAYPAL_CANCEL;
-			String successUrl = Utils.getBaseURL(request) + "/" + URL_PAYPAL_SUCCESS;
-			try {
-				totalPrice = totalPrice / 22;
-				Payment payment = paypalService.createPayment(totalPrice, "USD", PaypalPaymentMethod.paypal,
-						PaypalPaymentIntent.sale, "payment description", cancelUrl, successUrl);
-				for (Links links : payment.getLinks()) {
-					if (links.getRel().equals("approval_url")) {
-						return "redirect:" + links.getHref();
-					}
-				}
-			} catch (PayPalRESTException e) {
-				log.error(e.getMessage());
-			}
-
-		}
+		
 
 		session = request.getSession();
 		Date date = new Date();
@@ -332,7 +322,7 @@ public class CartController extends CommomController {
 					session.removeAttribute("cartItems");
 					model.addAttribute("orderId", orderFinal.getOrderId());
 					orderFinal = new Order();
-					return "redirect:/checkout_paypal_success";
+					return "redirect:/checkout_stripe_success";
 				} catch (Exception e) {
 					log.error(e.getMessage());
 				}
@@ -412,7 +402,7 @@ public class CartController extends CommomController {
 	}
 
 	// done checkout paypal
-	@GetMapping(value = "/checkout_paypal_success")
+	@GetMapping(value = "/checkout_stripe_success")
 	public String paypalSuccess(Model model, User user) {
 		commomDataService.commonData(model, user);
 

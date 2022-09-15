@@ -30,6 +30,16 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 			map.put(item.getId(), item);
 		}
 	}
+	
+	@Override
+	public CartItem update(Long id, int qty) {
+		CartItem itemm = map.get(id);
+		itemm.setQuantity(qty);
+		if(qty <= 0) {
+			map.remove(id);
+		}
+		return null;
+	}
 
 	@Override
 	public void remove(CartItem item) {
