@@ -45,23 +45,7 @@
                 <p>Thiết Lập Một Tài Khoản Mới</p>
               </div>
               <div class="user-form-group">
-                <ul class="user-form-social">
-                
-                  <li>
-                    <a class="facebook" href="javascript:void(0);">
-                    	<i class="fab fa-facebook-f"></i>Join with facebook
-                    </a>
-                  </li>
-                  
-                  <li>
-                    <a class="google" href="javascript:void(0);">
-                    	<i class="fab fa-google"></i>Join with google
-                    </a>
-                  </li>
-                  
-                </ul>
-                <div class="user-form-divider"><p>hoặc</p></div>
-                
+              
                 <form th:action="@{/register}" method="post" th:object="${user}" class="user-form">
                     <div class="form-group">
                         <input
@@ -119,7 +103,7 @@
               <p>Bạn đã có tài khoản?<a th:href="@{/login}">Đăng nhập tại đây</a></p>
             </div>
             <div class="user-form-footer">
-              <p>Bilbil | &COPY; Developer by <a href="javascript:void(0);">DongTHD</a></p>
+            
             </div>
           </div>
         </div>
