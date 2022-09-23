@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -114,7 +116,20 @@ public class OrderController {
 		if (o.isEmpty()) {
 			return new ModelAndView("forward:/admin/orders", model);
 		}
+//		Pattern pattern = Pattern.compile("\\d*");
+//        Matcher matcher = pattern.matcher(amount);
+//        if (matcher.matches()) {
+//           int soA = Integer.parseInt(str);
+//            t = 1;
+//        } else
+//        {
+//            System.out.println("Bạn vừa nhập vào không phải số, vui lòng nhập lại !");
+//        }
+		
 		Order oReal = o.get();
+		if (amount > oReal.getAmount()) {
+			return new ModelAndView("forward:/admin/orders", model);
+		}
 		oReal.setStatus((short) 4);
 		oReal.setRefund(amount);
 		orderRepository.save(oReal);

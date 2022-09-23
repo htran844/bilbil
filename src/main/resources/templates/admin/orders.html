@@ -238,9 +238,13 @@
 											$('#amount-name').val(amount);
 											$('#yesOptionRefund').attr('href', '/admin/order/refund/' + id + '/' + amount_value + '/' + paymentintent);
 											$( "#amount-name" ).change(function() {
-												 amount_value = Math.floor($('#amount-name').val()) ;
+												 let amount_value2 = Math.floor($('#amount-name').val()) ;
 												console.log(amount_value)
-												$('#yesOptionRefund').attr('href', '/admin/order/refund/' + id + '/' + amount_value + '/' + paymentintent);
+												if(amount_value2 > amount_value){
+													alert("không thể set số tiền lớn hơn số tiền thanh toán")
+													return;
+												}
+												$('#yesOptionRefund').attr('href', '/admin/order/refund/' + id + '/' + amount_value2 + '/' + paymentintent);
 												});
 											$('#configmationRefundId').modal('show');
 										}

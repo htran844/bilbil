@@ -171,6 +171,7 @@ public class CartController extends CommomController {
 	@PostMapping("/checkout/update/{id}")
 	public String updateCart(@PathVariable("id") Long id, 
 			@RequestParam("quantity") Integer qty) {
+		
 		shoppingCartService.update(id, qty);
 		return "redirect:/checkout";
 	}
